@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="http://q1.qlogo.cn/g?b=qq&nk=2656864435&s=100" type="image/x-icon">
     <title>贪墨–引导页</title>
     <style>
         :root {
@@ -30,6 +31,18 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
+        }
+        .header img.avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            animation: rotate 8s linear infinite;
+            margin: 0 auto 15px;
+            border: 2px solid var(--primary-color);
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         .alert {
             background: #fff3cd;
@@ -78,8 +91,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="color: var(--primary-color); margin-bottom: 5px;">贪墨–引导页</h1>
-            <p style="color: var(--secondary-color);">永久地址发布页，收藏不迷路！</p>
+            <img src="/img/tx.jpg" class="avatar" alt="头像">
+            <p style="color: var(--secondary-color); margin-top:10px;">永久地址发布页，收藏不迷路！</p>
             <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=3b-2xL7KfJXX3PNKffsHdJc_4GH6OZ-s&authKey=wQ19z431mXHhr%2BI2ZiexZDpQ4wDG9pCKKQBF7fa7ea2xx4EJmaw4OlIwEI97OMwB&noverify=0&group_code=821465523">
                 <h3>点击加入UP的QQ群</h3>
             </a>
