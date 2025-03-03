@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="http://q1.qlogo.cn/g?b=qq&nk=2656864435&s=100" type="image/x-icon">
-    <title>贪墨–引导页</title>
+    <title>贪墨–个人引导页</title>
     <style>
         :root {
             --primary-color: #2c7be5;
@@ -77,6 +77,16 @@
             margin-top: 20px;
             transition: transform 0.2s;
         }
+        .counter {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: var(--secondary-color);
+        }
+        .counter span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -115,12 +125,28 @@
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
-            <a href="#" class="download-btn">刷新本站</a>
+            <a href="https://tmo-minions.github.io/" class="download-btn">重新进入本站</a>
         </div>
 
+        <!-- 新增的计数器 -->
+        <div class="counter">
+            您是第 <span id="visitCount">520</span> 位访问者
+        </div>
+		
         <p style="margin-top: 30px; color: #6c757d; font-size: 0.9em;">
-            * 建议使用 Chrome 或 Via 浏览器访问，部分国产浏览器可能屏蔽网址
+            * 建议使用 Chrome 浏览器或 X 浏览器访问，部分国产浏览器可能屏蔽网址
         </p>
+		
     </div>
+
+    <script>
+        let visitCount = localStorage.getItem('visitCount');
+        if (!visitCount) {
+            visitCount = 0;
+        }
+        visitCount = parseInt(visitCount) + 1;
+        localStorage.setItem('visitCount', visitCount);
+        document.getElementById('visitCount').textContent = visitCount;
+    </script>
 </body>
 </html>
