@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阅读书源去重 By：贪墨</title>
+    <style>
+        /* 保持原有样式不变 */
+        :root {
+            --primary-color: #2196F3;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+        }
+        body {
+            font-family: system-ui;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            margin: 0 auto;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1.5em;
+        }
+        .upload-area {
+            border: 2px dashed #90A4AE;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem auto;
+            width: 90%;
+            max-width: 600px;
+            transition: all 0.3s;
+            background: white;
+        }
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #E3F2FD;
+            transform: scale(0.98);
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 28px;
+            cursor: pointer;
+            display: inline-flex;
+            gap: 0.8rem;
+            transition: transform 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        #resultArea {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-item {
+            padding: 1.2rem;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .download-btn {
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 28px;
+            text-decoration: none;
+            display: inline-flex;
+            gap: 0.8rem;
+            width: fit-content;
+            margin: 1.5rem auto 0;
+        }
+        .error-box {
+            color: var(--error-color);
+            padding: 1rem;
+            background: #FFEBEE;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        .url-input-area {
+            margin: 1rem auto;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            gap: 0.8rem;
+        }
+        .url-input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #90A4AE;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .url-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+        .url-button:hover {
+            opacity: 0.9;
+        }
+        @media (max-width: 480px) {
+            .upload-area { padding: 1.5rem; }
+            .stat-item { padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h2>📚 书源去重工具 by：贪墨</h2>
+        
+        <div class="url-input-area">
+            <input type="url" class="url-input" id="jsonUrl" placeholder="输入书源真实地址（用浏览器打开网络JSON 复制重定向的地址）">
+            <button class="url-button" onclick="processUrl()">下载处理</button>
+        </div>
+
+        <div class="upload-area" id="dropZone">
+            <input type="file" id="fileInput" accept=".json">
+            <label for="fileInput" class="upload-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M5 20h14v-2H5v2zm7-18L5.33 8.67 6.67 10 11 5.67V16h2V5.67l4.33 4.34 1.34-1.33L12 2z"/>
+                </svg>
+                选择JSON文件
+            </label>
+            <p style="margin-top:1rem; color:#78909C;">或拖放文件到此处</p>
+        </div>
+
+        <div id="resultArea"></div>
+    </main>
+
+    <script>
+        const emojiRegex = /[\p{Emoji}\u{200B}-\u{200D}\u{FEFF}]/gu;
+
+        const cleanEmojis = (str) => {
+            return typeof str === 'string' ? 
+                str.replace(emojiRegex, '')
+                  .replace(/\s{2,}/g, ' ')
+                  .trim() : str;
+        };
+
+        const deduplicate = (data) => {
+            const domainMap = new Map();
+            const validSources = [];
+            const errors = [];
+
+            data.forEach((source, index) => {
+                try {
+                    const cleanedSource = {
+                        ...source,
+                        bookSourceUrl: cleanEmojis(source.bookSourceUrl),
+                        bookSourceName: cleanEmojis(source.bookSourceName)
+                    };
+
+                    const url = new URL(cleanedSource.bookSourceUrl);
+                    const domain = url.hostname.replace(/^www\./i, '');
+                    if (!domainMap.has(domain)) {
+                        domainMap.set(domain, true);
+                        validSources.push(cleanedSource);
+                    }
+                } catch {
+                    errors.push(`行 ${index + 1}: 无效URL - ${source.bookSourceUrl}`);
+                }
+            });
+
+            const date = new Date();
+            const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+            const processedData = validSources.map(item => ({
+                ...item,
+                bookSourceComment: "By：Tom",
+                bookSourceGroup: `✔️${dateString}检验去重（优质${validSources.length}）`
+            }));
+
+            return {
+                result: processedData,
+                stats: {
+                    total: data.length,
+                    duplicates: data.length - validSources.length,
+                    errors: errors.length
+                },
+                errors
+            };
+        };
+
+        const processFile = (file) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const rawData = JSON.parse(e.target.result);
+                    const { result, stats, errors } = deduplicate(rawData);
+                    const blob = new Blob([JSON.stringify(result, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    
+                    const resultHTML = `
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div>原始数量</div>
+                                <div style="font-size:1.5em;">${stats.total}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div>重复数量</div>
+                                <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                    ${stats.duplicates}
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div>有效数量</div>
+                                <div style="font-size:1.5em;">${result.length}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div>错误条目</div>
+                                <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                    ${stats.errors}
+                                </div>
+                            </div>
+                        </div>
+                        ${errors.length ? `
+                        <div class="error-box">
+                            <strong>发现 ${errors.length} 个错误:</strong>
+                            <div style="margin-top:0.8rem;">
+                                ${errors.slice(0,3).join('<br>')}
+                                ${errors.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                            </div>
+                        </div>` : ''}
+                        <a href="${url}" download="${file.name.replace(/\..+$/, '')}_out.json" 
+                           class="download-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5l-1.3-1.3a1 1 0 0 1 1.4-1.4l2.9 2.9V6a1 1 0 1 1 2 0v7.2l2.9-2.9a1 1 0 1 1 1.4 1.4L19 13z"/>
+                            </svg>
+                            下载去重文件
+                        </a>
+                    `;
+                    
+                    document.getElementById('resultArea').innerHTML = resultHTML;
+                    if(errors.length) console.warn('完整错误列表:', errors);
+                } catch {
+                    document.getElementById('resultArea').innerHTML = 
+                        `<div class="error-box">JSON解析错误，请检查文件格式</div>`;
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        const getRealUrl = (originalUrl) => {
+            try {
+                const urlObj = new URL(originalUrl);
+                
+                if (urlObj.hostname === 'www.yckceo.com') {
+                    const pathParts = urlObj.pathname.split('/');
+                    const id = pathParts[pathParts.length - 1].replace('.json', '');
+                    
+                    return `https://gcore.jsdelivr.net/gh/mumuceo/file01/202411/${id === '690' ? '8500' : id}_e4adccff83969fefb66a15c8ccb1c1ad.json`;
+                }
+                return originalUrl;
+            } catch {
+                return originalUrl;
+            }
+        };
+
+        const processUrl = async () => {
+            const urlInput = document.getElementById('jsonUrl');
+            const resultArea = document.getElementById('resultArea');
+            
+            if (!urlInput.value) {
+                resultArea.innerHTML = `<div class="error-box">请输入有效的书源地址</div>`;
+                return;
+            }
+
+            try {
+                resultArea.innerHTML = `<div class="stat-item">正在解析地址...</div>`;
+                const realUrl = getRealUrl(urlInput.value);
+                console.log('转换后的真实地址:', realUrl);
+
+                const response = await fetch(realUrl);
+                if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                
+                const rawData = await response.json();
+                const { result, stats, errors } = deduplicate(rawData);
+                
+                const blob = new Blob([JSON.stringify(result, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const filename = new URL(realUrl).pathname.split('/').pop() || 'source';
+
+                const resultHTML = `
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div>原始数量</div>
+                            <div style="font-size:1.5em;">${stats.total}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div>重复数量</div>
+                            <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                ${stats.duplicates}
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div>有效数量</div>
+                            <div style="font-size:1.5em;">${result.length}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div>错误条目</div>
+                            <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                ${stats.errors}
+                            </div>
+                        </div>
+                    </div>
+                    ${errors.length ? `
+                    <div class="error-box">
+                        <strong>发现 ${errors.length} 个错误:</strong>
+                        <div style="margin-top:0.8rem;">
+                            ${errors.slice(0,3).join('<br>')}
+                            ${errors.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                        </div>
+                    </div>` : ''}
+                    <a href="${url}" download="${filename.replace(/\..+$/, '')}_out.json" 
+                       class="download-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                            <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5l-1.3-1.3a1 1 0 0 1 1.4-1.4l2.9 2.9V6a1 1 0 1 1 2 0v7.2l2.9-2.9a1 1 0 1 1 1.4 1.4L19 13z"/>
+                        </svg>
+                        下载去重文件
+                    </a>
+                `;
+                
+                resultArea.innerHTML = resultHTML;
+                if(errors.length) console.warn('完整错误列表:', errors);
+                
+            } catch (error) {
+                resultArea.innerHTML = `
+                    <div class="error-box">
+                        请求失败: ${error.message}<br>
+                        ${error.message.includes('690') ? '提示：示例ID 690对应真实ID 8500' : ''}
+                        请尝试以下方案：<br>
+                        1. 直接使用真实地址<br>
+                        2. 检查网络连接<br>
+                        3. 联系管理员更新转换规则
+                    </div>`;
+                console.error('详细错误:', error);
+            }
+        };
+
+        const dropZone = document.getElementById('dropZone');
+        document.getElementById('fileInput').addEventListener('change', e => e.target.files[0] && processFile(e.target.files[0]));
+        
+        ['dragover', 'dragenter'].forEach(e => dropZone.addEventListener(e, ev => {
+            ev.preventDefault();
+            dropZone.classList.add('dragover');
+        }));
+        ['dragleave', 'dragend', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
+        dropZone.addEventListener('drop', e => e.dataTransfer.files[0] && processFile(e.dataTransfer.files[0]));
+    </script>
+</body>
+</html>
