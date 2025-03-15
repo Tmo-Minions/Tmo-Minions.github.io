@@ -130,6 +130,55 @@
         .url-button:hover {
             opacity: 0.9;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .modal-content h3 {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+        textarea#jsonUrls {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #90A4AE;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
         @media (max-width: 480px) {
             .upload-area { padding: 1.5rem; }
             .stat-item { padding: 0.8rem; }
@@ -140,11 +189,6 @@
     <main>
         <h2>📚 书源去重工具 by：贪墨</h2>
         
-        <div class="url-input-area">
-            <input type="url" class="url-input" id="jsonUrl" placeholder="输入JSON文件网络地址">
-            <button class="url-button" onclick="processUrl()">开始处理</button>
-        </div>
-
         <div class="upload-area" id="dropZone">
             <input type="file" id="fileInput" accept=".json">
             <label for="fileInput" class="upload-button">
@@ -154,6 +198,22 @@
                 选择JSON文件
             </label>
             <p style="margin-top:1rem; color:#78909C;">或拖放文件到此处</p>
+            
+            <button class="url-button" id="showUrlModalBtn" style="margin-top:1rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                </svg>
+                点击打开输入网络链接
+            </button>
+        </div>
+
+        <div id="urlModal" class="modal">
+            <div class="modal-content">
+                <span class="close">×</span>
+                <h3>输入JSON文件网络地址</h3>
+                <textarea id="jsonUrls" placeholder="输入一个或多个JSON文件网址，每行一个"></textarea>
+                <button class="url-button" onclick="processUrls()" style="background:#2196F3; border-radius:28px; padding:0.8rem 1.5rem; margin-top:10px;">开始处理</button>
+            </div>
         </div>
 
         <div id="resultArea"></div>
@@ -272,29 +332,55 @@
             reader.readAsText(file);
         };
 
-        const processUrl = async () => {
-            const urlInput = document.getElementById('jsonUrl');
+        const processUrls = async () => {
+            const urlsInput = document.getElementById('jsonUrls');
             const resultArea = document.getElementById('resultArea');
+            const urls = urlsInput.value.split('\n').filter(url => url.trim());
             
-            if (!urlInput.value) {
-                resultArea.innerHTML = `<div class="error-box">请输入有效的JSON文件URL</div>`;
+            if (urls.length === 0) {
+                resultArea.innerHTML = `<div class="error-box">请输入至少一个有效的JSON文件URL</div>`;
                 return;
             }
 
             try {
                 resultArea.innerHTML = `<div class="stat-item">正在加载网络文件...</div>`;
-                const response = await fetch(urlInput.value);
+
+                document.getElementById('urlModal').style.display = 'none';
+
+                let allData = [];
+                let failedUrls = [];
                 
-                if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                for (const url of urls) {
+                    try {
+                        const response = await fetch(url.trim());
+                        
+                        if (!response.ok) {
+                            failedUrls.push(`${url} - HTTP错误: ${response.status}`);
+                            continue;
+                        }
+                        
+                        const data = await response.json();
+                        if (Array.isArray(data)) {
+                            allData = allData.concat(data);
+                        } else {
+                            failedUrls.push(`${url} - 返回的不是JSON数组`);
+                        }
+                    } catch (err) {
+                        failedUrls.push(`${url} - ${err.message}`);
+                    }
+                }
                 
-                const rawData = await response.json();
-                const { result, stats, errors } = deduplicate(rawData);
+                if (allData.length === 0) {
+                    resultArea.innerHTML = `<div class="error-box">所有URL都加载失败</div>`;
+                    return;
+                }
+                
+                const { result, stats, errors } = deduplicate(allData);
                 
                 const blob = new Blob([JSON.stringify(result, null, 2)], {type: 'application/json'});
                 const url = URL.createObjectURL(blob);
-                const filename = new URL(urlInput.value).pathname.split('/').pop() || 'source';
-
-                const resultHTML = `
+                
+                let resultHTML = `
                     <div class="stats">
                         <div class="stat-item">
                             <div>原始数量</div>
@@ -316,16 +402,32 @@
                                 ${stats.errors}
                             </div>
                         </div>
-                    </div>
-                    ${errors.length ? `
+                    </div>`;
+                
+                if (failedUrls.length) {
+                    resultHTML += `
+                    <div class="error-box">
+                        <strong>有 ${failedUrls.length} 个URL加载失败:</strong>
+                        <div style="margin-top:0.8rem;">
+                            ${failedUrls.slice(0,3).join('<br>')}
+                            ${failedUrls.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                        </div>
+                    </div>`;
+                }
+                
+                if (errors.length) {
+                    resultHTML += `
                     <div class="error-box">
                         <strong>发现 ${errors.length} 个错误:</strong>
                         <div style="margin-top:0.8rem;">
                             ${errors.slice(0,3).join('<br>')}
                             ${errors.length > 3 ? '<br>...更多错误详见控制台' : ''}
                         </div>
-                    </div>` : ''}
-                    <a href="${url}" download="${filename.replace(/\..+$/, '')}_out.json" 
+                    </div>`;
+                }
+                
+                resultHTML += `
+                    <a href="${url}" download="merged_sources_out.json" 
                        class="download-btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                             <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5l-1.3-1.3a1 1 0 0 1 1.4-1.4l2.9 2.9V6a1 1 0 1 1 2 0v7.2l2.9-2.9a1 1 0 1 1 1.4 1.4L19 13z"/>
@@ -336,20 +438,34 @@
                 
                 resultArea.innerHTML = resultHTML;
                 if(errors.length) console.warn('完整错误列表:', errors);
+                if(failedUrls.length) console.warn('加载失败的URL:', failedUrls);
                 
             } catch (error) {
                 resultArea.innerHTML = `
                     <div class="error-box">
-                        网络请求失败: ${error.message}<br>
-                        请检查：<br>
-                        1. URL是否正确<br>
-                        2. 是否支持CORS<br>
-                        3. 是否为有效JSON<br>
-                        示范链接：123.json<br>
-                        重定向后的链接：xxx.json
+                        处理失败: ${error.message}<br>
+                        请检查输入的URL是否正确
                     </div>`;
             }
         };
+
+        const modal = document.getElementById('urlModal');
+        const btn = document.getElementById('showUrlModalBtn');
+        const span = document.getElementsByClassName('close')[0];
+
+        btn.onclick = function() {
+            modal.style.display = 'block';
+        }
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
 
         const dropZone = document.getElementById('dropZone');
         document.getElementById('fileInput').addEventListener('change', e => e.target.files[0] && processFile(e.target.files[0]));
@@ -359,7 +475,10 @@
             dropZone.classList.add('dragover');
         }));
         ['dragleave', 'dragend', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
-        dropZone.addEventListener('drop', e => e.dataTransfer.files[0] && processFile(e.dataTransfer.files[0]));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+        });
     </script>
 </body>
 </html>
