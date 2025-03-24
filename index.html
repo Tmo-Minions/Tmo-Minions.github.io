@@ -204,6 +204,47 @@
 		
     </div>
 
+    <!-- 下载模态窗口 -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDownloadModal()">&times;</span>
+            <h2>贪墨文件下载中心</h2>
+            <p>请选择您需要下载的文件：</p>
+            
+            <div class="download-list">
+                <div class="download-item">
+                    <a href="/DS/DL物品查询工具v1.0.zip" download>
+                        <div>
+                            <strong>DL物品查询工具v1.0</strong>
+                            <p>DL工具</p>
+                        </div>
+                        <span class="file-size">15MB</span>
+                    </a>
+                </div>
+                
+                <div class="download-item">
+                    <a href="/XZ/消光大蛇改逼工具 v1.3.zip" download>
+                        <div>
+                            <strong>消光大蛇改逼工具 v1.3</strong>
+                            <p>DL工具</p>
+                        </div>
+                        <span class="file-size">2MB</span>
+                    </a>
+                </div>
+                
+                <div class="download-item">
+                    <a href="/XZ/萝卜助手v1.6.1.exe" download>
+                        <div>
+                            <strong>萝卜助手v1.6.1</strong>
+                            <p>萝卜挂机助手</p>
+                        </div>
+                        <span class="file-size">2MB</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let visitCount = localStorage.getItem('visitCount');
         if (!visitCount) {
