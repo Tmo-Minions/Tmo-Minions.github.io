@@ -77,6 +77,60 @@
             margin-top: 20px;
             transition: transform 0.2s;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+        .download-list {
+            margin-top: 20px;
+        }
+        .download-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e3ebf6;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .download-item:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+        .download-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .download-item a span.file-size {
+            color: var(--secondary-color);
+            font-size: 0.9em;
+        }
         .counter {
             text-align: center;
             margin-top: 30px;
@@ -131,8 +185,8 @@
         </div>
         
         <div class="link-card">
-            <a href="/XZ/DL物品查询工具v1.0.zip">
-                <h3>消逝的光芒物品查询工具下载</h3>
+            <a href="javascript:void(0)" onclick="openDownloadModal()">
+                <h3>贪墨文件下载地址</h3>
             </a>
         </div>
 	    
@@ -158,6 +212,21 @@
         visitCount = parseInt(visitCount) + 1;
         localStorage.setItem('visitCount', visitCount);
         document.getElementById('visitCount').textContent = visitCount;
+
+        function openDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'block';
+        }
+        
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            let modal = document.getElementById('downloadModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
