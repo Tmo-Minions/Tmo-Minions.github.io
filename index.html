@@ -312,10 +312,15 @@
                 const fileUrl = link.getAttribute('data-file');
                 const fileSizeElement = link.querySelector('.file-size');
                 const downloadCountElement = link.querySelector('.download-count');
+                const backupSize = link.getAttribute('data-size');
                 
                 // 获取文件大小
                 getFileSize(fileUrl, function(size) {
-                    fileSizeElement.textContent = size;
+                    if (size === '未知大小' && backupSize) {
+                        fileSizeElement.textContent = backupSize;
+                    } else {
+                        fileSizeElement.textContent = size;
+                    }
                 });
                 
                 // 获取下载次数
@@ -325,11 +330,48 @@
                 
                 // 添加下载事件监听
                 link.addEventListener('click', function() {
-                    const newCount = parseInt(count) + 1;
+                    const currentCount = parseInt(localStorage.getItem(downloadKey) || 0);
+                    const newCount = currentCount + 1;
                     localStorage.setItem(downloadKey, newCount);
                     downloadCountElement.textContent = newCount;
                 });
             });
+        }
+
+        // 添加错误处理和重试机制
+        function getFileSize(url, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const size = xhr.getResponseHeader('Content-Length');
+                        callback(size ? formatFileSize(parseInt(size)) : '未知大小');
+                    } else {
+                        console.log('获取文件大小失败: ' + url + ', 状态码: ' + xhr.status);
+                        // 尝试使用GET请求作为备选方案
+                        tryGetFileSizeWithFetch(url, callback);
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                console.log('获取文件大小请求错误: ' + url);
+                tryGetFileSizeWithFetch(url, callback);
+            };
+            xhr.send(null);
+        }
+
+        // 使用fetch API作为备选方案
+        function tryGetFileSizeWithFetch(url, callback) {
+            fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    const size = response.headers.get('Content-Length');
+                    callback(size ? formatFileSize(parseInt(size)) : '未知大小');
+                })
+                .catch(error => {
+                    console.error('Fetch获取文件大小失败:', error);
+                    callback('未知大小');
+                });
         }
 
         window.addEventListener('DOMContentLoaded', function() {
