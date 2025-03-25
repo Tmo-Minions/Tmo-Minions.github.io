@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="http://q1.qlogo.cn/g?b=qq&nk=2656864435&s=100" type="image/x-icon">
     <title>贪墨–个人引导页</title>
+    <!-- 在样式表中添加以下内容 -->
     <style>
         :root {
             --primary-color: #2c7be5;
@@ -130,6 +131,12 @@
         .download-item a span.file-size {
             color: var(--secondary-color);
             font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .download-item a span.download-count {
+            color: var(--secondary-color);
+            font-size: 0.9em;
+            margin-left: 15px;
         }
         .counter {
             text-align: center;
@@ -209,45 +216,39 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeDownloadModal()">&times;</span>
             <h2>贪墨文件下载中心</h2>
+            <p>请选择您需要下载的文件：</p>
             
             <div class="download-list">
                 <div class="download-item">
-                    <a href="下载过慢请使用代理加速" download data-file="网站托管于Github，加速后下载更快" data-size="">
-                    <a href="/DS/DL物品查询工具v1.0.zip" download data-file="/DS/DL物品查询工具v1.0.zip">
+                    <a href="/DS/DL物品查询工具v1.0.zip" download data-file-path="/DS/DL物品查询工具v1.0.zip">
                         <div>
                             <strong>DL物品查询工具v1.0</strong>
                             <p>DL工具</p>
                         </div>
-                        <div>
-                            <span class="file-size">加载中...</span>
-                            <p><small>下载次数: <span class="download-count">0</span></small></p>
-                        </div>
+                        <span class="file-size">加载中...</span>
+                        <span class="download-count">下载次数: 0</span>
                     </a>
                 </div>
                 
                 <div class="download-item">
-                    <a href="/XZ/消光大蛇改逼工具 v1.3.zip" download data-file="/XZ/消光大蛇改逼工具 v1.3.zip">
+                    <a href="/XZ/消光大蛇改逼工具 v1.3.zip" download data-file-path="/XZ/消光大蛇改逼工具 v1.3.zip">
                         <div>
                             <strong>消光大蛇改逼工具 v1.3</strong>
                             <p>DL工具</p>
                         </div>
-                        <div>
-                            <span class="file-size">加载中...</span>
-                            <p><small>下载次数: <span class="download-count">0</span></small></p>
-                        </div>
+                        <span class="file-size">加载中...</span>
+                        <span class="download-count">下载次数: 0</span>
                     </a>
                 </div>
                 
                 <div class="download-item">
-                    <a href="/XZ/萝卜助手v1.6.1.exe" download data-file="/XZ/萝卜助手v1.6.1.exe">
+                    <a href="/XZ/萝卜助手v1.6.1.exe" download data-file-path="/XZ/萝卜助手v1.6.1.exe">
                         <div>
                             <strong>萝卜助手v1.6.1</strong>
                             <p>萝卜挂机助手</p>
                         </div>
-                        <div>
-                            <span class="file-size">加载中...</span>
-                            <p><small>下载次数: <span class="download-count">0</span></small></p>
-                        </div>
+                        <span class="file-size">加载中...</span>
+                        <span class="download-count">下载次数: 0</span>
                     </a>
                 </div>
             </div>
@@ -265,6 +266,7 @@
 
         function openDownloadModal() {
             document.getElementById('downloadModal').style.display = 'block';
+            loadFileInfo();
         }
         
         function closeDownloadModal() {
@@ -277,105 +279,61 @@
                 modal.style.display = 'none';
             }
         }
-
-        // 格式化文件大小
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // 获取文件大小
-        function getFileSize(url, callback) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('HEAD', url, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const size = xhr.getResponseHeader('Content-Length');
-                        callback(size ? formatFileSize(parseInt(size)) : '未知');
-                    } else {
-                        callback('未知');
-                    }
-                }
-            };
-            xhr.send(null);
-        }
-
-        // 初始化下载计数器
-        function initDownloadCounters() {
-            const downloadLinks = document.querySelectorAll('.download-item a');
+        
+        // 获取文件大小和下载次数
+        function loadFileInfo() {
+            const downloadLinks = document.querySelectorAll('.download-item a[download]');
             
             downloadLinks.forEach(link => {
-                const fileUrl = link.getAttribute('data-file');
-                const fileSizeElement = link.querySelector('.file-size');
-                const downloadCountElement = link.querySelector('.download-count');
-                const backupSize = link.getAttribute('data-size');
-                
-                // 获取文件大小
-                getFileSize(fileUrl, function(size) {
-                    if (size === '未知大小' && backupSize) {
-                        fileSizeElement.textContent = backupSize;
-                    } else {
-                        fileSizeElement.textContent = size;
-                    }
-                });
+                const filePath = link.getAttribute('data-file-path');
+                const fileKey = 'download_count_' + filePath.replace(/[^a-zA-Z0-9]/g, '_');
                 
                 // 获取下载次数
-                const downloadKey = 'download_count_' + fileUrl.replace(/[^a-zA-Z0-9]/g, '_');
-                const count = localStorage.getItem(downloadKey) || 0;
-                downloadCountElement.textContent = count;
+                let downloadCount = localStorage.getItem(fileKey) || 0;
+                link.querySelector('.download-count').textContent = '下载次数: ' + downloadCount;
                 
-                // 添加下载事件监听
+                // 获取文件大小
+                fetch(filePath, { method: 'HEAD' })
+                    .then(response => {
+                        const size = response.headers.get('content-length');
+                        if (size) {
+                            const formattedSize = formatFileSize(size);
+                            link.querySelector('.file-size').textContent = formattedSize;
+                        } else {
+                            link.querySelector('.file-size').textContent = '未知大小';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取文件大小失败:', error);
+                        link.querySelector('.file-size').textContent = '未知大小';
+                    });
+                    
+                // 添加下载事件监听器
                 link.addEventListener('click', function() {
-                    const currentCount = parseInt(localStorage.getItem(downloadKey) || 0);
-                    const newCount = currentCount + 1;
-                    localStorage.setItem(downloadKey, newCount);
-                    downloadCountElement.textContent = newCount;
+                    downloadCount = parseInt(downloadCount) + 1;
+                    localStorage.setItem(fileKey, downloadCount);
+                    link.querySelector('.download-count').textContent = '下载次数: ' + downloadCount;
                 });
             });
         }
-
-        // 添加错误处理和重试机制
-        function getFileSize(url, callback) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('HEAD', url, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const size = xhr.getResponseHeader('Content-Length');
-                        callback(size ? formatFileSize(parseInt(size)) : '未知大小');
-                    } else {
-                        console.log('获取文件大小失败: ' + url + ', 状态码: ' + xhr.status);
-                        // 尝试使用GET请求作为备选方案
-                        tryGetFileSizeWithFetch(url, callback);
-                    }
-                }
-            };
-            xhr.onerror = function() {
-                console.log('获取文件大小请求错误: ' + url);
-                tryGetFileSizeWithFetch(url, callback);
-            };
-            xhr.send(null);
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-
-        // 使用fetch API作为备选方案
-        function tryGetFileSizeWithFetch(url, callback) {
-            fetch(url, { method: 'HEAD' })
-                .then(response => {
-                    const size = response.headers.get('Content-Length');
-                    callback(size ? formatFileSize(parseInt(size)) : '未知大小');
-                })
-                .catch(error => {
-                    console.error('Fetch获取文件大小失败:', error);
-                    callback('未知大小');
-                });
-        }
-
-        window.addEventListener('DOMContentLoaded', function() {
-            initDownloadCounters();
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果模态窗口已经打开，则加载文件信息
+            if (document.getElementById('downloadModal').style.display === 'block') {
+                loadFileInfo();
+            }
         });
     </script>
 </body>
