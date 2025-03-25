@@ -213,28 +213,40 @@
             
             <div class="download-list">
                 <div class="download-item">
-                    <a href="/DS/DL物品查询工具v1.0.zip" download>
+                    <a href="/DS/DL物品查询工具v1.0.zip" download data-file="/DS/DL物品查询工具v1.0.zip">
                         <div>
                             <strong>DL物品查询工具v1.0</strong>
                             <p>DL工具</p>
                         </div>
-                    </a>
-                </div>
-                
-                <div class="download-item">
-                    <a href="/XZ/消光大蛇改逼工具 v1.3.zip" download>
                         <div>
-                            <strong>消光大蛇改逼工具 v1.3</strong>
-                            <p>DL工具</p>
+                            <span class="file-size">加载中...</span>
+                            <p><small>下载次数: <span class="download-count">0</span></small></p>
                         </div>
                     </a>
                 </div>
                 
                 <div class="download-item">
-                    <a href="/XZ/萝卜助手v1.6.1.exe" download>
+                    <a href="/XZ/消光大蛇改逼工具 v1.3.zip" download data-file="/XZ/消光大蛇改逼工具 v1.3.zip">
+                        <div>
+                            <strong>消光大蛇改逼工具 v1.3</strong>
+                            <p>DL工具</p>
+                        </div>
+                        <div>
+                            <span class="file-size">加载中...</span>
+                            <p><small>下载次数: <span class="download-count">0</span></small></p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="download-item">
+                    <a href="/XZ/萝卜助手v1.6.1.exe" download data-file="/XZ/萝卜助手v1.6.1.exe">
                         <div>
                             <strong>萝卜助手v1.6.1</strong>
                             <p>萝卜挂机助手</p>
+                        </div>
+                        <div>
+                            <span class="file-size">加载中...</span>
+                            <p><small>下载次数: <span class="download-count">0</span></small></p>
                         </div>
                     </a>
                 </div>
@@ -265,6 +277,64 @@
                 modal.style.display = 'none';
             }
         }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 获取文件大小
+        function getFileSize(url, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const size = xhr.getResponseHeader('Content-Length');
+                        callback(size ? formatFileSize(parseInt(size)) : '未知');
+                    } else {
+                        callback('未知');
+                    }
+                }
+            };
+            xhr.send(null);
+        }
+
+        // 初始化下载计数器
+        function initDownloadCounters() {
+            const downloadLinks = document.querySelectorAll('.download-item a');
+            
+            downloadLinks.forEach(link => {
+                const fileUrl = link.getAttribute('data-file');
+                const fileSizeElement = link.querySelector('.file-size');
+                const downloadCountElement = link.querySelector('.download-count');
+                
+                // 获取文件大小
+                getFileSize(fileUrl, function(size) {
+                    fileSizeElement.textContent = size;
+                });
+                
+                // 获取下载次数
+                const downloadKey = 'download_count_' + fileUrl.replace(/[^a-zA-Z0-9]/g, '_');
+                const count = localStorage.getItem(downloadKey) || 0;
+                downloadCountElement.textContent = count;
+                
+                // 添加下载事件监听
+                link.addEventListener('click', function() {
+                    const newCount = parseInt(count) + 1;
+                    localStorage.setItem(downloadKey, newCount);
+                    downloadCountElement.textContent = newCount;
+                });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            initDownloadCounters();
+        });
     </script>
 </body>
 </html>
