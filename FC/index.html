@@ -206,7 +206,7 @@
                 const img = document.createElement('img');
                 img.onerror = function() {
                     this.onerror = null;
-                    this.src = 'img/1.png';
+                    this.src = '../img/1.png'; // 修改路径为上一级目录的img文件夹
                 };
                 img.src = `https://iips.speed.qq.com/images/${row[0]}.png`;
                 img.alt = '商品图片';
