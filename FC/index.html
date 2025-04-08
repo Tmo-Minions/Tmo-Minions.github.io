@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>飞车道具查询</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .search-container input, .search-container select, .search-container button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            word-break: break-word;
+            max-width: 300px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #dataTable img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            max-height: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .pagination button, .pagination input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            max-width: 100px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .pagination input {
+            width: 60px;
+            text-align: center;
+        }
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>飞车道具查询</h1>
+    
+    <div class="search-container">
+        <select id="categoryFilter">
+            <option value="">所有分类</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="搜索名称...">
+        <button id="searchBtn">搜索</button>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>图片</th>
+                    <th>ID</th>
+                    <th>分类</th>
+                    <th>名称</th>
+                    <th>描述</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button id="firstPage">首页</button>
+        <button id="prevPage">上一页</button>
+        <span id="pageInfo">第1页</span>
+        <input type="number" id="jumpPage" min="1">
+        <button id="jumpBtn">跳转</button>
+        <button id="nextPage">下一页</button>
+        <button id="lastPage">尾页</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let lastSearchTerm = '';
+        let lastCategory = '';
+        
+        async function initDatabase() {
+            try {
+                const SQL = await initSqlJs({
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm`
+                });
+                
+                const response = await fetch('/items.db');
+                if (!response.ok) throw new Error(`无法加载数据库文件 (HTTP ${response.status})`);
+                
+                const buffer = await response.arrayBuffer();
+                const db = new SQL.Database(new Uint8Array(buffer));
+                
+                console.log('数据库加载成功');
+                return db;
+            } catch (error) {
+                console.error('数据库初始化错误:', error);
+                alert('加载数据库失败: ' + error.message);
+                throw error;
+            }
+        }
+
+        async function loadData(searchTerm = '', category = '', page = 1) {
+            const db = await initDatabase();
+            currentPage = page;
+            lastSearchTerm = searchTerm;
+            lastCategory = category;
+            
+            let query = 'SELECT * FROM items WHERE 1=1';
+            const params = [];
+            
+            if (searchTerm) {
+                query += ' AND name LIKE ?';
+                params.push(`%${searchTerm}%`);
+            }
+            
+            if (category) {
+                query += ' AND category = ?';
+                params.push(category);
+            }
+            
+            const countQuery = query.replace('SELECT *', 'SELECT COUNT(*)');
+            const countResult = db.exec(countQuery, params);
+            const totalCount = countResult[0]?.values[0][0] || 0;
+            totalPages = Math.ceil(totalCount / 10);
+            
+            query += ' LIMIT 10 OFFSET ?';
+            params.push((page - 1) * 10);
+            
+            const results = db.exec(query, params);
+            const data = results[0]?.values || [];
+            
+            document.getElementById('pageInfo').textContent = `第${page}页/共${totalPages}页`;
+            document.getElementById('prevPage').disabled = page <= 1;
+            document.getElementById('nextPage').disabled = page >= totalPages;
+            
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                const imgTd = document.createElement('td');
+                const img = document.createElement('img');
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = 'img/1.png';
+                };
+                img.src = `https://iips.speed.qq.com/images/${row[0]}.png`;
+                img.alt = '商品图片';
+                imgTd.appendChild(img);
+                tr.appendChild(imgTd);
+                
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                
+                tableBody.appendChild(tr);
+            });
+            
+            loadCategories(db);
+        }
+        
+        async function loadCategories(db) {
+            const results = db.exec('SELECT DISTINCT category FROM items');
+            const categories = results[0]?.values.flat() || [];
+            const select = document.getElementById('categoryFilter');
+            
+            select.innerHTML = '<option value="">所有分类</option>';
+            
+            categories.sort((a, b) => {
+                const isALetter = /^[a-zA-Z]/.test(a);
+                const isBLetter = /^[a-zA-Z]/.test(b);
+                
+                if (isALetter && !isBLetter) return -1;
+                if (!isALetter && isBLetter) return 1;
+                return a.localeCompare(b);
+            });
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                select.appendChild(option);
+            });
+        }
+        
+        function doSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const category = document.getElementById('categoryFilter').value;
+            loadData(searchTerm, category, 1);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            
+            document.getElementById('searchBtn').addEventListener('click', doSearch);
+            
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') doSearch();
+            });
+            
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    loadData(lastSearchTerm, lastCategory, currentPage - 1);
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    loadData(lastSearchTerm, lastCategory, currentPage + 1);
+                }
+            });
+            
+            document.getElementById('jumpBtn').addEventListener('click', () => {
+                const jumpPage = parseInt(document.getElementById('jumpPage').value);
+                if (!isNaN(jumpPage) && jumpPage >= 1 && jumpPage <= totalPages) {
+                    loadData(lastSearchTerm, lastCategory, jumpPage);
+                } else {
+                    alert(`请输入有效的页码(1-${totalPages})`);
+                }
+            });
+            
+            document.getElementById('jumpPage').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('jumpBtn').click();
+                }
+            });
+            
+            document.getElementById('firstPage').addEventListener('click', () => {
+                loadData(lastSearchTerm, lastCategory, 1);
+            });
+            
+            document.getElementById('lastPage').addEventListener('click', () => {
+                loadData(lastSearchTerm, lastCategory, totalPages);
+            });
+        });
+    </script>
+</body>
+</html>
