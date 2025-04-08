@@ -146,7 +146,6 @@
                     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm`
                 });
                 
-                // 修改数据库文件路径为相对路径
                 const response = await fetch('items.db');
                 if (!response.ok) throw new Error(`无法加载数据库文件 (HTTP ${response.status})`);
                 
@@ -206,7 +205,7 @@
                 const img = document.createElement('img');
                 img.onerror = function() {
                     this.onerror = null;
-                    this.src = '../img/1.png'; // 修改路径为上一级目录的img文件夹
+                    this.src = '../img/1.png';
                 };
                 img.src = `https://iips.speed.qq.com/images/${row[0]}.png`;
                 img.alt = '商品图片';
