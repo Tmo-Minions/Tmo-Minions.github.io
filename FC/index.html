@@ -146,6 +146,7 @@
                     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm`
                 });
                 
+                // 修改数据库文件路径为相对路径
                 const response = await fetch('items.db');
                 if (!response.ok) throw new Error(`无法加载数据库文件 (HTTP ${response.status})`);
                 
