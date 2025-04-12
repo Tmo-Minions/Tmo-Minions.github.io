@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>影视搜索</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 保留您原有的 CSS 样式 */
+        :root {
+            --bg-color: #f7f7f7;
+            --text-color: #333;
+            /* ... 其他样式变量 ... */
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            /* ... 其他暗色主题样式变量 ... */
+        }
+
+        /* ... 其他样式定义 ... */
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div id="announcementModal">
+        <div class="modal-content">
+            <h2>📢 免责声明</h2>
+            <p>本站所有内容均来自互联网，本站不会保存、复制或传播任何视频文件，也不对本站上的任何内容负法律责任。如果本站部分内容侵犯您的版权请告知，在必要证明文件下我们第一时间撤除。</p>
+            <p><font color="red"><b>请勿相信视频中的任何广告！</b></font></p>
+            <p><b>开源地址：</b><a href="https://github.com/您的用户名/ysss">GitHub</a></p>
+            <button id="closeButton" disabled>
+                <span id="countdownText">5</span> 秒后可关闭
+            </button>
+        </div>
+    </div>
+
+    <div id="container">
+        <h1>影视搜索</h1>
+
+        <div id="searchForm">
+            <form id="searchFormElement" style="display: flex; justify-content: center; align-items: center;">
+                <input type="text" id="searchInput" placeholder="请输入影片名称" style="flex-grow: 1; padding: 10px 10px; font-size: 16px; border: 1px solid var(--border-color); border-radius: 5px; margin-right: 10px; background-color: var(--input-bg); color: var(--input-text);"/>
+                
+                <div class="select-wrapper">
+                    <select id="sourceSelect">
+                        <option value="1">片源1</option>
+                        <option value="2">片源2</option>
+                        <option value="3">片源3</option>
+                        <option value="4">片源4</option>
+                        <option value="5">片源5</option>
+                        <option value="6">片源6</option>
+                    </select>
+                    <div class="select-arrow">
+                        <i class="fas fa-angle-down"></i>
+                    </div>
+                </div>
+
+                <button type="submit" style="padding: 10px 15px; font-size: 16px; color: white; background-color: var(--button-bg); border: none; border-radius: 5px; cursor: pointer; white-space: nowrap; text-align: center; vertical-align: middle; display: inline-flex; justify-content: center; align-items: center;">搜索</button>
+            </form>
+        </div>
+
+        <div id="movieList" style="display: none;">
+            <h3>🔍 搜索结果</h3>
+            <!-- 搜索结果将通过 JavaScript 动态添加 -->
+        </div>
+
+        <div id="movieDetails" style="display: none;">
+            <h3>🎬 影片详情</h3><hr>
+            <div class="movie-info">
+                <div class="details">
+                    <table id="movieInfoTable">
+                        <!-- 影片详情将通过 JavaScript 动态添加 -->
+                    </table>
+                </div>
+                <div class="poster">
+                    <img id="moviePoster" src="" alt="" style="max-width: 100%;">
+                </div>
+            </div>
+
+            <div class="content">
+                <h3>💬 影片简介</h3><hr>
+                <p id="movieContent"></p>
+            </div><br>
+
+            <h3>🔞 播放列表</h3><hr>
+            <div id="playList">
+                <!-- 播放列表将通过 JavaScript 动态添加 -->
+            </div>
+        </div>
+        
+        <!-- 添加下载区域 -->
+        <div id="downloadSection" style="margin-top: 30px; background-color: var(--container-bg); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <h3>📥 资源下载</h3><hr>
+            <div class="download-list">
+                <div class="download-item" style="padding: 15px; margin-bottom: 10px; background-color: var(--movie-list-bg); border-radius: 5px; transition: all 0.3s ease;">
+                    <a href="https://github.com/您的用户名/ysss/raw/main/XZ/DL物品查询工具v1.0.zip" style="display: flex; justify-content: space-between; text-decoration: none; color: var(--text-color);">
+                        <span><strong>DL物品查询工具v1.0</strong></span>
+                        <span class="download-btn" style="background-color: var(--button-bg); color: white; padding: 5px 10px; border-radius: 5px;">下载</span>
+                    </a>
+                </div>
+                
+                <div class="download-item" style="padding: 15px; margin-bottom: 10px; background-color: var(--movie-list-bg); border-radius: 5px; transition: all 0.3s ease;">
+                    <a href="https://github.com/您的用户名/ysss/raw/main/XZ/消光大蛇改逼工具 v1.3.zip" style="display: flex; justify-content: space-between; text-decoration: none; color: var(--text-color);">
+                        <span><strong>消光大蛇改逼工具 v1.3</strong></span>
+                        <span class="download-btn" style="background-color: var(--button-bg); color: white; padding: 5px 10px; border-radius: 5px;">下载</span>
+                    </a>
+                </div>
+                
+                <div class="download-item" style="padding: 15px; margin-bottom: 10px; background-color: var(--movie-list-bg); border-radius: 5px; transition: all 0.3s ease;">
+                    <a href="https://github.com/您的用户名/ysss/raw/main/XZ/萝卜助手v1.6.1.exe" style="display: flex; justify-content: space-between; text-decoration: none; color: var(--text-color);">
+                        <span><strong>萝卜助手v1.6.1</strong></span>
+                        <span class="download-btn" style="background-color: var(--button-bg); color: white; padding: 5px 10px; border-radius: 5px;">下载</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        
+        function toggleTheme() {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            themeToggle.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            
+            localStorage.setItem('theme_preference', newTheme);
+        }
+        
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        // 初始化主题
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme_preference');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+                themeToggle.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                htmlElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+        
+        // 公告功能
+        function shouldShowAnnouncement() {
+            const lastShownDate = localStorage.getItem('lastShownDate');
+            const today = new Date().toLocaleDateString();
+            return lastShownDate !== today;
+        }
+
+        function showAnnouncement() {
+            const modal = document.getElementById('announcementModal');
+            const closeButton = document.getElementById('closeButton');
+            const countdownText = document.getElementById('countdownText');
+            let countdown = 5;
+
+            modal.style.display = 'block';
+
+            const timer = setInterval(() => {
+                countdown--;
+                countdownText.textContent = countdown;
+
+                if (countdown > 0) {
+                    closeButton.disabled = true;
+                    closeButton.textContent = `${countdown} 秒后可关闭`;
+                } else {
+                    clearInterval(timer);
+                    closeButton.disabled = false;
+                    closeButton.textContent = '关闭公告';
+                }
+            }, 1000);
+
+            closeButton.onclick = () => {
+                localStorage.setItem('lastShownDate', new Date().toLocaleDateString());
+                modal.style.display = 'none'; 
+            };
+        }
+
+        // 搜索功能
+        document.getElementById('searchFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchQuery = document.getElementById('searchInput').value.trim();
+            const selectedSource = document.getElementById('sourceSelect').value;
+            
+            if (searchQuery) {
+                searchMovies(searchQuery, selectedSource);
+            }
+        });
+
+        function searchMovies(query, source) {
+            const searchUrl = `https://baiapi.cn/api/ysss?y=${source}&wd=${encodeURIComponent(query)}`;
+            
+            fetch(searchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    displaySearchResults(data, query, source);
+                })
+                .catch(error => {
+                    console.error('搜索出错:', error);
+                    alert('搜索失败，请稍后再试');
+                });
+        }
+
+        function displaySearchResults(data, query, source) {
+            const movieList = document.getElementById('movieList');
+            movieList.style.display = 'block';
+            document.getElementById('movieDetails').style.display = 'none';
+            
+            // 清空现有结果
+            movieList.innerHTML = '<h3>🔍 搜索结果</h3>';
+            
+            if (data && data.list && data.list.length > 0) {
+                data.list.forEach(movie => {
+                    const button = document.createElement('button');
+                    button.textContent = `${movie.vod_name} - ${movie.vod_remarks}`;
+                    button.onclick = function() {
+                        getMovieDetails(movie.vod_id, source);
+                    };
+                    movieList.appendChild(button);
+                });
+            } else {
+                const noResults = document.createElement('p');
+                noResults.textContent = '没有找到相关影片';
+                movieList.appendChild(noResults);
+            }
+        }
+
+        function getMovieDetails(movieId, source) {
+            const detailsUrl = `https://baiapi.cn/api/ysss?y=${source}&id=${encodeURIComponent(movieId)}`;
+            
+            fetch(detailsUrl)
+                .then(response => response.json())
+                .then(data => {
+                    displayMovieDetails(data);
+                })
+                .catch(error => {
+                    console.error('获取影片详情出错:', error);
+                    alert('获取影片详情失败，请稍后再试');
+                });
+        }
+
+        function displayMovieDetails(data) {
+            if (!data || !data.name) {
+                alert('获取影片详情失败');
+                return;
+            }
+            
+            document.getElementById('movieList').style.display = 'none';
+            const movieDetails = document.getElementById('movieDetails');
+            movieDetails.style.display = 'block';
+            
+            // 设置海报
+            document.getElementById('moviePoster').src = data.pic;
+            document.getElementById('moviePoster').alt = data.name;
+            
+            // 设置影片信息表格
+            const infoTable = document.getElementById('movieInfoTable');
+            infoTable.innerHTML = `
+                <tr><th>导演</th><td>${data.director || '未知'}</td></tr>
+                <tr><th>类型</th><td>${data.class || '未知'}</td></tr>
+                <tr><th>日期</th><td>${data.pubdate || '未知'}</td></tr>
+                <tr><th>评分</th><td>${data.douban_score || '未知'}</td></tr>
+                <tr><th>地区</th><td>${data.area || '未知'}</td></tr>
+            `;
+            
+            // 设置简介
+            document.getElementById('movieContent').innerHTML = data.content || '暂无简介';
+            
+            // 设置播放列表
+            const playList = document.getElementById('playList');
+            playList.innerHTML = '';
+            
+            if (data.play_url && Array.isArray(data.play_url) && data.play_url.length > 0) {
+                data.play_url.forEach(episode => {
+                    const link = document.createElement('a');
+                    link.href = `https://baiapi.cn/api/webbfq?&apiKey=b458d0b622fc7634bf24c5e6a956d352&url=${encodeURIComponent(episode.link)}`;
+                    link.className = 'play-button';
+                    link.target = '_blank';
+                    link.textContent = episode.title;
+                    playList.appendChild(link);
+                });
+            } else {
+                playList.innerHTML = '<p>暂无播放列表。</p>';
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            
+            if (shouldShowAnnouncement()) {
+                showAnnouncement();
+            }
+            
+            // 从 URL 参数获取搜索查询和片源
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const source = urlParams.get('y') || '1';
+            
+            // 设置选择的片源
+            document.getElementById('sourceSelect').value = source;
+            
+            // 如果有搜索查询，执行搜索
+            if (searchQuery) {
+                document.getElementById('searchInput').value = searchQuery;
+                searchMovies(searchQuery, source);
+                
+                // 如果有电影 ID，获取电影详情
+                const movieId = urlParams.get('movie_id');
+                if (movieId) {
+                    getMovieDetails(movieId, source);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
