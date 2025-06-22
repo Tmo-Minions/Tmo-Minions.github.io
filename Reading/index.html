@@ -257,7 +257,6 @@
             const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
             const processedData = validSources.map(item => ({
                 ...item,
-                bookSourceComment: "By：Tom",
                 bookSourceGroup: `✔️${dateString}检验去重（优质${validSources.length}）`
             }));
 
