@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔法工艺九宫格</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(20, 20, 30, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(100, 150, 255, 0.2);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            color: #a0c0ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+            perspective: 800px;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+ box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .cell:active {
+            transform: scale(0.92);
+        }
+
+        .inactive {
+            background: linear-gradient(135deg, #3a1015, #5a151a);
+            color: #ff6b7a;
+            text-shadow: 0 0 8px rgba(255, 100, 120, 0.6);
+            border-color: rgba(255, 100, 120, 0.3);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(255, 100, 120, 0.2);
+        }
+
+        .active {
+            background: linear-gradient(135deg, #0a3a3a, #0f5a5a);
+            color: #5fffd0;
+            text-shadow: 0 0 10px rgba(95, 255, 208, 0.8);
+            border-color: rgba(95, 255, 208, 0.4);
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 12px rgba(95, 255, 208, 0.3);
+            animation: runeGlow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes runeGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(95, 255, 208, 0.8); }
+            50% { text-shadow: 0 0 18px rgba(95, 255, 208, 1); }
+        }
+
+        .flipping {
+            animation: flip 0.3s ease;
+        }
+
+        @keyframes flip {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(90deg) scale(0.7); filter: brightness(1.5); }
+            100% { transform: rotateY(0deg) scale(1); }
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            background: rgba(15, 25, 45, 0.8);
+            border-radius: 8px;
+            margin: 10px 0;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 1px solid rgba(80, 120, 200, 0.3);
+            transition: all 0.3s;
+        }
+
+        .status.success {
+            background: rgba(10, 50, 40, 0.8);
+            border-color: rgba(95, 255, 208, 0.5);
+            color: #5fffd0;
+            text-shadow: 0 0 8px rgba(95, 255, 208, 0.6);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            min-width: 100px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #startBtn {
+            background: linear-gradient(135deg, #5a2a8a, #8a3ab9);
+            color: #e0d0ff;
+ border: 1px solid rgba(150, 100, 255, 0.4);
+        }
+
+        #resetBtn {
+            background: linear-gradient(135deg, #2a4a5a, #3a6a8a);
+            color: #d0e0ff;
+            border: 1px solid rgba(80, 150, 200, 0.4);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            background: rgba(15, 25, 45, 0.6);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 0.85rem;
+            color: #8a9ab0;
+            margin-top: 10px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #e0f0ff;
+            font-size: 1rem;
+        }
+
+        .instruction {
+            background: rgba(30, 30, 40, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #b0c0d0;
+            border-left: 3px solid #a0c0ff;
+            margin-bottom: 10px;
+        }
+
+        .instruction strong {
+            color: #e0f0ff;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .cell {
+                font-size: 1.1rem;
+            }
+
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+                min-width: 85px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ 魔法工艺九宫格 ⚡</h1>
+
+        <div class="instruction">
+            <strong>规则：</strong>点击格子会翻转它及相邻格子<br>
+            <strong>操作：</strong>观察不亮的格子，按从左到右、从上到下处理<br>
+            • 先处理一轮，再去处理下一轮不亮的！<br>
+            • 而不是踩一个就处理一个！！！<br>
+            • 不亮的下面有亮的？→ 点击不亮的<br>
+            • 最下面不亮？→ 点击最顶上<br>
+            <strong>目标：</strong>全部点亮（绿色）
+        </div>
+
+        <div class="grid" id="grid">
+            <!-- 九宫格由JS生成 -->
+        </div>
+
+        <div class="status" id="status">点击"开始"生成随机符文</div>
+
+        <div class="stats">
+            <div>步数: <span class="stat-value" id="steps">0</span></div>
+            <div>已点亮: <span class="stat-value" id="active">0/9</span></div>
+            <div>未亮: <span class="stat-value" id="inactive">9</span></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="startBtn">开始</button>
+            <button class="btn" id="resetBtn" disabled>重置</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('grid');
+            const status = document.getElementById('status');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const stepsEl = document.getElementById('steps');
+            const activeEl = document.getElementById('active');
+            const inactiveEl = document.getElementById('inactive');
+
+            let gameState = {
+                cells: {},
+                won: false,
+                steps: 0,
+                started: false,
+                initialConfig: null
+            };
+
+            // 生成随机初始状态（2-4个点亮）
+            function generateConfig() {
+                const config = {};
+                const activeCount = Math.floor(Math.random() * 3) + 2;
+                const positions = Array.from({length: 9}, (_, i) => i + 1);
+
+                // 洗牌
+                for (let i = positions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [positions[i], positions[j]] = [positions[j], positions[i]];
+                }
+
+                for (let i = 0; i < 9; i++) {
+                    config[positions[i]] = i < activeCount ? 'active' : 'inactive';
+                }
+
+                return config;
+            }
+
+            // 创建九宫格
+            function createGrid(cells) {
+                grid.innerHTML = '';
+                for (let i = 1; i <= 9; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.id = i;
+                    cell.textContent = i;
+                    cell.classList.add(cells[i]);
+
+                    cell.addEventListener('click', () => handleCellClick(i));
+                    grid.appendChild(cell);
+                }
+                updateStats();
+            }
+
+            // 获取相邻格子
+            function getNeighbors(id) {
+                const neighbors = [id];
+                const row = Math.floor((id - 1) / 3);
+                const col = (id - 1) % 3;
+
+                if (row > 0) neighbors.push(id - 3);
+                if (row < 2) neighbors.push(id + 3);
+                if (col > 0) neighbors.push(id - 1);
+                if (col < 2) neighbors.push(id + 1);
+
+                return neighbors;
+            }
+
+            // 切换状态
+            function toggleCell(id) {
+                const cell = document.querySelector(`[data-id="${id}"]`);
+                cell.classList.add('flipping');
+
+                setTimeout(() => {
+                    if (gameState.cells[id] === 'inactive') {
+                        gameState.cells[id] = 'active';
+                        cell.classList.remove('inactive');
+                        cell.classList.add('active');
+                    } else {
+                        gameState.cells[id] = 'inactive';
+                        cell.classList.remove('active');
+                        cell.classList.add('inactive');
+                    }
+                    cell.classList.remove('flipping');
+                }, 200);
+            }
+
+            // 点击处理
+            function handleCellClick(id) {
+                if (!gameState.started || gameState.won) return;
+
+                gameState.steps++;
+                stepsEl.textContent = gameState.steps;
+
+                // 翻转相邻格子
+                const neighbors = getNeighbors(id);
+                neighbors.forEach(nId => toggleCell(nId));
+
+                // 状态提示
+                const influence = neighbors.length;
+                let msg = `点击${id}，翻转${influence}个`;
+                if (id === 5) msg += " ⭐中心";
+                else if ([2, 4, 6, 8].includes(id)) msg += " ◆边符";
+                else msg += " ◇角符";
+
+                status.textContent = msg;
+                status.className = "status";
+
+                // 延迟检查
+                setTimeout(() => {
+                    checkWin();
+                    updateStats();
+                }, 300);
+            }
+
+            // 更新统计
+            function updateStats() {
+                const active = Object.values(gameState.cells).filter(c => c === 'active').length;
+                activeEl.textContent = `${active}/9`;
+                inactiveEl.textContent = 9 - active;
+            }
+
+            // 检查胜利
+            function checkWin() {
+                const allActive = Object.values(gameState.cells).every(s => s === 'active');
+
+                if (allActive) {
+                    gameState.won = true;
+                    status.textContent = `仪式完成！用了${gameState.steps}步`;
+                    status.className = "status success";
+                    resetBtn.disabled = false;
+                } else if (gameState.steps === 8) {
+                    status.textContent = "步骤较多，试试点击中心(5)或边符(4,6)！";
+                    status.style.color = "#ffb450";
+                }
+            }
+
+            // 开始游戏
+            function startGame() {
+                gameState.initialConfig = generateConfig();
+                gameState.cells = {...gameState.initialConfig};
+                gameState.won = false;
+                gameState.steps = 0;
+                gameState.started = true;
+
+                createGrid(gameState.cells);
+
+                const active = Object.values(gameState.cells).filter(c => c === 'active').length;
+                status.textContent = `开始！${active}个已点亮，需全部点亮`;
+                status.className = "status";
+                stepsEl.textContent = "0";
+                resetBtn.disabled = false;
+                startBtn.textContent = "重新开始";
+            }
+
+            // 重置游戏
+            function resetGame() {
+                if (!gameState.started) return;
+
+                gameState.cells = {...gameState.initialConfig};
+                gameState.won = false;
+                gameState.steps = 0;
+
+                createGrid(gameState.cells);
+
+                const active = Object.values(gameState.cells).filter(c => c === 'active').length;
+                status.textContent = `重置！${active}个已点亮`;
+                status.className = "status";
+                stepsEl.textContent = "0";
+            }
+
+            // 事件监听
+            startBtn.addEventListener('click', startGame);
+            resetBtn.addEventListener('click', resetGame);
+
+            // 初始化空网格
+            const emptyCells = {};
+            for (let i = 1; i <= 9; i++) {
+                emptyCells[i] = 'inactive';
+            }
+            createGrid(emptyCells);
+        });
+    </script>
+</body>
+</html>
