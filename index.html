@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="http://q1.qlogo.cn/g?b=qq&nk=2656864435&s=100" type="image/x-icon">
+    <title>呱呱-个人引导页</title>
+    <style>
+        :root {
+            --primary-color: #2c7be5;
+            --secondary-color: #6e84a3;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            background: url('/img/bj.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header img.avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            animation: rotate 8s linear infinite;
+            margin: 0 auto 15px;
+            border: 2px solid var(--primary-color);
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .alert {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .link-card {
+            border: 1px solid #e3ebf6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.8);
+        }
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .link-card a {
+            text-decoration: none;
+            color: var(--primary-color);
+            display: block;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #00bf9c;
+            color: white!important;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+        .download-list {
+            margin-top: 20px;
+        }
+        .download-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e3ebf6;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .download-item:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+        .download-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .download-item a span.file-size {
+            color: var(--secondary-color);
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .download-item a span.download-count {
+            color: var(--secondary-color);
+            font-size: 0.9em;
+            margin-left: 15px;
+        }
+        .counter {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: var(--secondary-color);
+        }
+        .counter span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            body {
+                background-attachment: scroll;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="/img/xz.gif" class="avatar" alt="头像">
+            <p style="color: var(--secondary-color); margin-top:10px;">永久地址发布页，收藏不迷路！</p>
+            <a href="https://tmo-minions.github.io/">
+                <h3>一个没啥用的引导页</h3>
+            </a>
+        </div>
+
+        <div class="alert">
+            📢 请使用 <kbd>Ctrl+D</kbd> 收藏本页到浏览器收藏夹
+        </div>
+
+        <div class="link-card">
+            <a href="/Reading/index.html">
+                <h3>阅读书源在线去重</h3>
+            </a>
+        </div>
+
+        <div class="link-card">
+            <a href="/DS/MF.html">
+                <h3>魔法工艺九宫格点灯解密</h3>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
