@@ -18,21 +18,39 @@
             padding: 20px 15px;
             margin: 0 auto;
             line-height: 1.6;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            position: relative;
+        }
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/bj.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.7);
+            opacity: 0.6;
+            z-index: -2;
+            pointer-events: none;
         }
         main {
             flex: 1;
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
+            z-index: 1;
         }
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: #fff;
             margin-bottom: 1.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .upload-area {
-            border: 2px dashed #90A4AE;
+            border: 2px dashed rgba(144, 164, 174, 0.6);
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
@@ -40,34 +58,47 @@
             width: 90%;
             max-width: 600px;
             transition: all 0.3s;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            -webkit-backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         .upload-area.dragover {
-            border-color: var(--primary-color);
-            background: #E3F2FD;
+            border-color: rgba(33, 150, 243, 0.8);
+            background: rgba(33, 150, 243, 0.15);
             transform: scale(0.98);
         }
         #fileInput {
             display: none;
         }
         .upload-button {
-            background: var(--primary-color);
+            background: rgba(33, 150, 243, 0.8);
             color: white;
             padding: 1rem 2rem;
             border-radius: 28px;
             cursor: pointer;
             display: inline-flex;
             gap: 0.8rem;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.2s;
             border: none;
             font-size: 1rem;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .upload-button:hover {
+            background: rgba(33, 150, 243, 0.9);
+            transform: translateY(-2px);
         }
         #resultArea {
             margin-top: 1.5rem;
             padding: 1.5rem;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            -webkit-backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             width: 90%;
             max-width: 600px;
             margin-left: auto;
@@ -82,12 +113,16 @@
         .stat-item {
             padding: 1.2rem;
             border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             text-align: center;
+            color: #fff;
         }
         .download-btn {
-            background: var(--success-color);
+            background: rgba(76, 175, 80, 0.8);
             color: white;
             padding: 1rem 2rem;
             border-radius: 28px;
@@ -96,11 +131,22 @@
             gap: 0.8rem;
             width: fit-content;
             margin: 1.5rem auto 0;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .download-btn:hover {
+            background: rgba(76, 175, 80, 0.9);
+            transform: translateY(-2px);
         }
         .error-box {
-            color: var(--error-color);
+            color: #ff5252;
             padding: 1rem;
-            background: #FFEBEE;
+            background: rgba(255, 235, 238, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 82, 82, 0.3);
             border-radius: 8px;
             margin-top: 1.5rem;
         }
@@ -114,21 +160,32 @@
         .url-input {
             flex: 1;
             padding: 0.8rem;
-            border: 1px solid #90A4AE;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(144, 164, 174, 0.6);
             border-radius: 8px;
             font-size: 1rem;
+            color: #fff;
+        }
+        .url-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
         .url-button {
-            background: var(--primary-color);
+            background: rgba(33, 150, 243, 0.8);
             color: white;
             padding: 0.8rem 1.5rem;
             border-radius: 20px;
             cursor: pointer;
             border: none;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .url-button:hover {
             opacity: 0.9;
+            transform: translateY(-2px);
         }
         .modal {
             display: none;
@@ -138,46 +195,58 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.7);
         }
         .modal-content {
-            background-color: white;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            -webkit-backdrop-filter: blur(12px) saturate(180%) brightness(0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             margin: 10% auto;
             padding: 20px;
             border-radius: 12px;
             width: 80%;
             max-width: 500px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
             position: relative;
+            color: #fff;
         }
         .close {
             position: absolute;
             right: 20px;
             top: 15px;
-            color: #aaa;
+            color: rgba(255, 255, 255, 0.7);
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.2s;
         }
         .close:hover {
-            color: black;
+            color: white;
         }
         .modal-content h3 {
             margin-top: 5px;
             margin-bottom: 15px;
             font-size: 18px;
-            color: #333;
+            color: #fff;
         }
         textarea#jsonUrls {
             width: 100%;
             height: 120px;
             padding: 10px;
             margin: 15px 0;
-            border: 1px solid #90A4AE;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(144, 164, 174, 0.6);
             border-radius: 8px;
             resize: vertical;
             font-family: inherit;
             box-sizing: border-box;
+            color: #fff;
+        }
+        textarea#jsonUrls::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
         @media (max-width: 480px) {
             .upload-area { padding: 1.5rem; }
@@ -186,6 +255,7 @@
     </style>
 </head>
 <body>
+    <div class="bg-layer"></div>
     <main>
         <h2>📚 书源去重工具 by：贪墨</h2>
         
@@ -197,7 +267,7 @@
                 </svg>
                 选择JSON文件
             </label>
-            <p style="margin-top:1rem; color:#78909C;">可选择多个文件或拖放多个文件到此处、源仓库的网络源需要定向到准确源再粘贴进来去重！</p>
+            <p style="margin-top:1rem; color:rgba(255,255,255,0.8);">可选择多个文件或拖放多个文件到此处、源仓库的网络源需要定向到准确源再粘贴进来去重！</p>
             
             <button class="url-button" id="showUrlModalBtn" style="margin-top:1rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -212,7 +282,7 @@
                 <span class="close">×</span>
                 <h3>输入JSON文件网络地址</h3>
                 <textarea id="jsonUrls" placeholder="输入一个或多个JSON文件网址，每行一个"></textarea>
-                <button class="url-button" onclick="processUrls()" style="background:#2196F3; border-radius:28px; padding:0.8rem 1.5rem; margin-top:10px;">开始处理</button>
+                <button class="url-button" onclick="processUrls()" style="background:rgba(33, 150, 243, 0.8); border-radius:28px; padding:0.8rem 1.5rem; margin-top:10px;">开始处理</button>
             </div>
         </div>
 
@@ -309,7 +379,7 @@
                     </div>
                     <div class="stat-item">
                         <div>重复数量</div>
-                        <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                        <div style="color:${stats.duplicates ? '#ff5252' : '#4CAF50'};font-size:1.5em;">
                             ${stats.duplicates}
                         </div>
                     </div>
@@ -319,7 +389,7 @@
                     </div>
                     <div class="stat-item">
                         <div>错误条目</div>
-                        <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                        <div style="color:${stats.errors ? '#ff5252' : '#4CAF50'};font-size:1.5em;">
                             ${stats.errors}
                         </div>
                     </div>
@@ -480,7 +550,7 @@
                         </div>
                         <div class="stat-item">
                             <div>重复数量</div>
-                            <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                            <div style="color:${stats.duplicates ? '#ff5252' : '#4CAF50'};font-size:1.5em;">
                                 ${stats.duplicates}
                             </div>
                         </div>
@@ -490,7 +560,7 @@
                         </div>
                         <div class="stat-item">
                             <div>错误条目</div>
-                            <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                            <div style="color:${stats.errors ? '#ff5252' : '#4CAF50'};font-size:1.5em;">
                                 ${stats.errors}
                             </div>
                         </div>
