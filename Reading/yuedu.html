@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阅读书源去重 By：贪墨</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+        }
+        body {
+            font-family: system-ui;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            margin: 0 auto;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1.5em;
+        }
+        .upload-area {
+            border: 2px dashed #90A4AE;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem auto;
+            width: 90%;
+            max-width: 600px;
+            transition: all 0.3s;
+            background: white;
+        }
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #E3F2FD;
+            transform: scale(0.98);
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 28px;
+            cursor: pointer;
+            display: inline-flex;
+            gap: 0.8rem;
+            transition: transform 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        #resultArea {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-item {
+            padding: 1.2rem;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .download-btn {
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 28px;
+            text-decoration: none;
+            display: inline-flex;
+            gap: 0.8rem;
+            width: fit-content;
+            margin: 1.5rem auto 0;
+        }
+        .error-box {
+            color: var(--error-color);
+            padding: 1rem;
+            background: #FFEBEE;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        .url-input-area {
+            margin: 1rem auto;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            gap: 0.8rem;
+        }
+        .url-input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #90A4AE;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .url-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+        .url-button:hover {
+            opacity: 0.9;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .modal-content h3 {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+        textarea#jsonUrls {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #90A4AE;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        @media (max-width: 480px) {
+            .upload-area { padding: 1.5rem; }
+            .stat-item { padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h2>📚 书源去重工具 by：贪墨</h2>
+        
+        <div class="upload-area" id="dropZone">
+            <input type="file" id="fileInput" accept=".json" multiple>
+            <label for="fileInput" class="upload-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M5 20h14v-2H5v2zm7-18L5.33 8.67 6.67 10 11 5.67V16h2V5.67l4.33 4.34 1.34-1.33L12 2z"/>
+                </svg>
+                选择JSON文件
+            </label>
+            <p style="margin-top:1rem; color:#78909C;">可选择多个文件或拖放多个文件到此处、源仓库的网络源需要定向到准确源再粘贴进来去重！</p>
+            
+            <button class="url-button" id="showUrlModalBtn" style="margin-top:1rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                </svg>
+                点击打开输入网络链接
+            </button>
+        </div>
+
+        <div id="urlModal" class="modal">
+            <div class="modal-content">
+                <span class="close">×</span>
+                <h3>输入JSON文件网络地址</h3>
+                <textarea id="jsonUrls" placeholder="输入一个或多个JSON文件网址，每行一个"></textarea>
+                <button class="url-button" onclick="processUrls()" style="background:#2196F3; border-radius:28px; padding:0.8rem 1.5rem; margin-top:10px;">开始处理</button>
+            </div>
+        </div>
+
+        <div id="resultArea"></div>
+    </main>
+
+    <script>
+        const emojiRegex = /[\p{Emoji}\u{200B}-\u{200D}\u{FEFF}]/gu;
+
+        const cleanEmojis = (str) => {
+            return typeof str === 'string' ? 
+                str.replace(emojiRegex, '')
+                  .replace(/\s{2,}/g, ' ')
+                  .trim() : str;
+        };
+
+        const deduplicate = (data) => {
+            const domainMap = new Map();
+            const validSources = [];
+            const errors = [];
+
+            data.forEach((source, index) => {
+                try {
+                    const cleanedSource = {
+                        ...source,
+                        bookSourceUrl: cleanEmojis(source.bookSourceUrl),
+                        bookSourceName: cleanEmojis(source.bookSourceName)
+                    };
+
+                    const url = new URL(cleanedSource.bookSourceUrl);
+                    const domain = url.hostname.replace(/^www\./i, '');
+                    if (!domainMap.has(domain)) {
+                        domainMap.set(domain, true);
+                        validSources.push(cleanedSource);
+                    }
+                } catch {
+                    errors.push(`行 ${index + 1}: 无效URL - ${source.bookSourceUrl}`);
+                }
+            });
+
+            const date = new Date();
+            const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+            const processedData = validSources.map(item => ({
+                ...item,
+                bookSourceGroup: `✔️${dateString}检验去重（优质${validSources.length}）`
+            }));
+
+            return {
+                result: processedData,
+                stats: {
+                    total: data.length,
+                    duplicates: data.length - validSources.length,
+                    errors: errors.length
+                },
+                errors
+            };
+        };
+
+        const processFiles = async (files) => {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.innerHTML = `<div class="stat-item">正在处理文件...</div>`;
+            
+            let allData = [];
+            let failedFiles = [];
+            
+            for (const file of files) {
+                try {
+                    const fileData = await readFileAsJson(file);
+                    if (Array.isArray(fileData)) {
+                        allData = allData.concat(fileData);
+                    } else {
+                        failedFiles.push(`${file.name} - 不是有效的JSON数组`);
+                    }
+                } catch (err) {
+                    failedFiles.push(`${file.name} - ${err.message}`);
+                }
+            }
+            
+            if (allData.length === 0) {
+                resultArea.innerHTML = `<div class="error-box">所有文件都处理失败</div>`;
+                return;
+            }
+            
+            const { result, stats, errors } = deduplicate(allData);
+            
+            const blob = new Blob([JSON.stringify(result, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            
+            let resultHTML = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>原始数量</div>
+                        <div style="font-size:1.5em;">${stats.total}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>重复数量</div>
+                        <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                            ${stats.duplicates}
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div>有效数量</div>
+                        <div style="font-size:1.5em;">${result.length}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>错误条目</div>
+                        <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                            ${stats.errors}
+                        </div>
+                    </div>
+                </div>`;
+            
+            if (failedFiles.length) {
+                resultHTML += `
+                <div class="error-box">
+                    <strong>有 ${failedFiles.length} 个文件处理失败:</strong>
+                    <div style="margin-top:0.8rem;">
+                        ${failedFiles.slice(0,3).join('<br>')}
+                        ${failedFiles.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                    </div>
+                </div>`;
+            }
+            
+            if (errors.length) {
+                resultHTML += `
+                <div class="error-box">
+                    <strong>发现 ${errors.length} 个错误:</strong>
+                    <div style="margin-top:0.8rem;">
+                        ${errors.slice(0,3).join('<br>')}
+                        ${errors.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                    </div>
+                </div>`;
+            }
+            
+            resultHTML += `
+                <a href="${url}" download="merged_sources_out.json" 
+                   class="download-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5l-1.3-1.3a1 1 0 0 1 1.4-1.4l2.9 2.9V6a1 1 0 1 1 2 0v7.2l2.9-2.9a1 1 0 1 1 1.4 1.4L19 13z"/>
+                    </svg>
+                    下载去重文件
+                </a>
+            `;
+            
+            resultArea.innerHTML = resultHTML;
+            if(errors.length) console.warn('完整错误列表:', errors);
+            if(failedFiles.length) console.warn('处理失败的文件:', failedFiles);
+        };
+
+        const readFileAsJson = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        resolve(data);
+                    } catch (err) {
+                        reject(new Error('JSON解析错误'));
+                    }
+                };
+                reader.onerror = () => reject(new Error('文件读取错误'));
+                reader.readAsText(file);
+            });
+        };
+
+        document.getElementById('fileInput').addEventListener('change', e => {
+            if (e.target.files.length > 0) {
+                processFiles(e.target.files);
+            }
+        });
+        
+        const modal = document.getElementById('urlModal');
+        const btn = document.getElementById('showUrlModalBtn');
+        const span = document.getElementsByClassName('close')[0];
+
+        btn.onclick = function() {
+            modal.style.display = 'block';
+        }
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragover', 'dragenter'].forEach(e => dropZone.addEventListener(e, ev => {
+            ev.preventDefault();
+            dropZone.classList.add('dragover');
+        }));
+        
+        ['dragleave', 'dragend'].forEach(e => dropZone.addEventListener(e, () => {
+            dropZone.classList.remove('dragover');
+        }));
+        
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                processFiles(e.dataTransfer.files);
+            }
+        });
+
+        const processUrls = async () => {
+            const urlsInput = document.getElementById('jsonUrls');
+            const resultArea = document.getElementById('resultArea');
+            const urls = urlsInput.value.split('\n').filter(url => url.trim());
+            
+            if (urls.length === 0) {
+                resultArea.innerHTML = `<div class="error-box">请输入至少一个有效的JSON文件URL</div>`;
+                return;
+            }
+
+            try {
+                resultArea.innerHTML = `<div class="stat-item">正在加载网络文件...</div>`;
+                
+                document.getElementById('urlModal').style.display = 'none';
+                
+                let allData = [];
+                let failedUrls = [];
+                
+                for (const url of urls) {
+                    try {
+                        const response = await fetch(url.trim());
+                        
+                        if (!response.ok) {
+                            failedUrls.push(`${url} - HTTP错误: ${response.status}`);
+                            continue;
+                        }
+                        
+                        const data = await response.json();
+                        if (Array.isArray(data)) {
+                            allData = allData.concat(data);
+                        } else {
+                            failedUrls.push(`${url} - 返回的不是JSON数组`);
+                        }
+                    } catch (err) {
+                        failedUrls.push(`${url} - ${err.message}`);
+                    }
+                }
+                
+                if (allData.length === 0) {
+                    resultArea.innerHTML = `<div class="error-box">所有URL都加载失败</div>`;
+                    if (failedUrls.length) {
+                        console.warn('加载失败的URL:', failedUrls);
+                    }
+                    return;
+                }
+                
+                const { result, stats, errors } = deduplicate(allData);
+                
+                const blob = new Blob([JSON.stringify(result, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                
+                let resultHTML = `
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div>原始数量</div>
+                            <div style="font-size:1.5em;">${stats.total}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div>重复数量</div>
+                            <div style="color:${stats.duplicates ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                ${stats.duplicates}
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div>有效数量</div>
+                            <div style="font-size:1.5em;">${result.length}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div>错误条目</div>
+                            <div style="color:${stats.errors ? 'var(--error-color)' : '#4CAF50'};font-size:1.5em;">
+                                ${stats.errors}
+                            </div>
+                        </div>
+                    </div>`;
+                
+                if (failedUrls.length) {
+                    resultHTML += `
+                    <div class="error-box">
+                        <strong>有 ${failedUrls.length} 个URL加载失败:</strong>
+                        <div style="margin-top:0.8rem;">
+                            ${failedUrls.slice(0,3).join('<br>')}
+                            ${failedUrls.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                        </div>
+                    </div>`;
+                }
+                
+                if (errors.length) {
+                    resultHTML += `
+                    <div class="error-box">
+                        <strong>发现 ${errors.length} 个错误:</strong>
+                        <div style="margin-top:0.8rem;">
+                            ${errors.slice(0,3).join('<br>')}
+                            ${errors.length > 3 ? '<br>...更多错误详见控制台' : ''}
+                        </div>
+                    </div>`;
+                }
+                
+                resultHTML += `
+                    <a href="${url}" download="merged_sources_out.json" 
+                       class="download-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                            <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5l-1.3-1.3a1 1 0 0 1 1.4-1.4l2.9 2.9V6a1 1 0 1 1 2 0v7.2l2.9-2.9a1 1 0 1 1 1.4 1.4L19 13z"/>
+                        </svg>
+                        下载去重文件
+                    </a>
+                `;
+                
+                resultArea.innerHTML = resultHTML;
+                if(errors.length) console.warn('完整错误列表:', errors);
+                if(failedUrls.length) console.warn('加载失败的URL:', failedUrls);
+            } catch (err) {
+                resultArea.innerHTML = `<div class="error-box">处理过程中发生错误: ${err.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
