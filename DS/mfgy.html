@@ -156,7 +156,41 @@
             height: 260px; 
             margin: 0 auto; 
         }
-        .light        </div>
+        .light { 
+            border-radius: 12px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 22px; 
+            font-weight: bold; 
+            transition: 0.3s; 
+            user-select: none; 
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .light.on { 
+            background: rgba(241, 196, 15, 0.8);
+            color: white; 
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6), 0 4px 12px rgba(0,0,0,0.2);
+            border-color: rgba(241, 196, 15, 0.5);
+        }
+        .light.off { 
+            background: rgba(52, 73, 94, 0.6);
+            color: #bdc3c7; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-layer"></div>
+    <div class="container">
+        <h1>九宫格熄灯小游戏</h1>
+        <div class="subtitle">点击格子改变灯的状态，黄色代表灯亮，目标：点亮所有灯</div>
+        <div class="solution">
+            <div class="solution-steps" id="solutionSteps">点击解密可获取解密步骤</div>
+        </div>
         <div class="mode">
             <button class="mode-btn active" id="randomModeBtn">随机模式练习室</button>
             <button class="mode-btn" id="customModeBtn">游戏内当前设置</button>
@@ -208,7 +242,7 @@
                     gameInfoElement.innerHTML = `🎉 恭喜！全部点亮！`;
                     gameInfoElement.style.color = '#2ecc71';
                 } else {
-                    gameInfoElement.style.color = '#2c3e50';
+                    gameInfoElement.style.color = '#fff';
                 }
             }
 
